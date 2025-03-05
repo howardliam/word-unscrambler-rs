@@ -5,6 +5,11 @@ use std::{
     path::Path,
 };
 
+struct SearchData {
+    pub building: String,
+    pub letters: String,
+}
+
 pub struct Unscrambler {
     dictionary: HashSet<String>,
 }
@@ -20,7 +25,6 @@ impl Unscrambler {
     /// Loads the dictionary into the unscrambler.
     ///
     /// # Errors
-    ///
     /// This function will return an error if the file does not exist.
     pub fn load_dictionary(&mut self, path: &Path) -> Result<(), Error> {
         let file = match File::open(path) {
@@ -28,12 +32,14 @@ impl Unscrambler {
             Err(error) => return Err(error),
         };
         let reader = BufReader::new(file);
+        let mut lines = reader.lines();
 
-        for line in reader.lines() {
-            if line.is_err() {
-                continue;
-            }
-            self.dictionary.insert(line.unwrap().to_lowercase());
+        while let Some(Ok(line)) = lines.next() {
+            let words = line.split(" ");
+
+            words
+                .map(|word| self.dictionary.insert(word.to_owned().to_lowercase()))
+                .for_each(drop);
         }
 
         Ok(())
@@ -81,9 +87,4 @@ impl Unscrambler {
 
         found_words
     }
-}
-
-struct SearchData {
-    pub building: String,
-    pub letters: String,
 }
