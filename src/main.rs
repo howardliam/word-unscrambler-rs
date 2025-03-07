@@ -28,7 +28,7 @@ fn main() {
     loop {
         let input = rl.readline("Type some scrambled text [Ctrl-C, Ctrl-D to exit]: ");
         let line = match input {
-            Ok(line) => line,
+            Ok(line) => line.trim().to_owned(),
             Err(ReadlineError::Interrupted | ReadlineError::Eof) => {
                 println!("\nExiting...");
                 break;
@@ -44,7 +44,7 @@ fn main() {
             Err(error) => println!("Failed to add history entry: {}", error),
         }
 
-        let words = match unscrambler.unscramble(line) {
+        let words = match unscrambler.unscramble(line.to_lowercase()) {
             Some(words) => words,
             None => continue,
         };
