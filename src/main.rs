@@ -1,20 +1,20 @@
 use std::path::Path;
+use trie::Trie;
+use unscrambler::unscramble;
 
-use unscrambler::Unscrambler;
-
+mod dictionary;
+mod trie;
 mod unscrambler;
 
 fn main() {
-    let mut unscrambler = Unscrambler::new();
-    match unscrambler.load_dictionary(Path::new("dict.txt")) {
+    let mut trie = Trie::new();
+    match dictionary::load_dictionary(&mut trie, Path::new("dict.txt")) {
         Ok(_) => {}
         Err(error) => panic!("Failed to load dictionary: {}", error),
     }
 
-    let found_words = unscrambler.unscramble(String::from("letters"));
-
-    println!("{} words found", found_words.len());
-    for word in found_words {
+    let matches = unscramble(&trie, "testicular".to_owned());
+    for word in matches {
         println!("{}", word);
     }
 }

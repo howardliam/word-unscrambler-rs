@@ -1,90 +1,41 @@
-use std::{
-    collections::{HashSet, VecDeque},
-    fs::File,
-    io::{BufRead, BufReader, Error},
-    path::Path,
-};
+use std::collections::HashSet;
 
-struct SearchData {
-    pub building: String,
-    pub letters: String,
+use crate::trie::{Trie, TrieNode};
+
+pub fn unscramble(trie: &Trie, letters: String) -> HashSet<String> {
+    let mut matches = HashSet::new();
+
+    let current_node = &trie.root;
+    recursive_unscramble(
+        current_node,
+        "".to_owned(),
+        letters.chars().collect(),
+        &mut matches,
+    );
+
+    matches
 }
 
-pub struct Unscrambler {
-    dictionary: HashSet<String>,
-}
-
-impl Unscrambler {
-    /// Creates a new [`Unscrambler`].
-    pub fn new() -> Self {
-        Self {
-            dictionary: HashSet::new(),
-        }
+fn recursive_unscramble(
+    current_node: &TrieNode,
+    building: String,
+    letters: Vec<char>,
+    matches: &mut HashSet<String>,
+) {
+    if current_node.is_word {
+        matches.insert(building.clone());
     }
 
-    /// Loads the dictionary into the unscrambler.
-    ///
-    /// # Errors
-    /// This function will return an error if the file does not exist.
-    pub fn load_dictionary(&mut self, path: &Path) -> Result<(), Error> {
-        let file = match File::open(path) {
-            Ok(file) => file,
-            Err(error) => return Err(error),
-        };
-        let reader = BufReader::new(file);
-        let mut lines = reader.lines();
-
-        while let Some(Ok(line)) = lines.next() {
-            let words = line.split(" ");
-
-            words
-                .map(|word| self.dictionary.insert(word.to_owned().to_lowercase()))
-                .for_each(drop);
-        }
-
-        Ok(())
-    }
-
-    /// Generates a [`HashSet`] of words found.
-    pub fn unscramble(&self, letters: String) -> HashSet<String> {
-        let start_data = SearchData {
-            building: String::new(),
-            letters,
+    for (i, ch) in letters.iter().enumerate() {
+        let next_node = match current_node.children.get(&ch) {
+            Some(node) => node,
+            None => continue,
         };
 
-        let mut search_queue = VecDeque::new();
-        search_queue.push_back(start_data);
+        let new_building = building.clone() + &ch.to_string();
+        let mut new_letters = letters.clone();
+        new_letters.remove(i);
 
-        let mut found_words = HashSet::new();
-
-        while let Some(search_data) = search_queue.pop_front() {
-            let SearchData { building, letters } = search_data;
-
-            if self.dictionary.contains(&building) {
-                found_words.insert(building.clone());
-            }
-
-            for i in 0..letters.len() {
-                let ch = match letters.chars().nth(i) {
-                    Some(character) => character,
-                    None => continue,
-                };
-
-                let mut new_building = building.clone();
-                new_building.push(ch);
-
-                let mut new_letters = letters.clone();
-                new_letters.remove(i);
-
-                let new_data = SearchData {
-                    building: new_building,
-                    letters: new_letters,
-                };
-
-                search_queue.push_back(new_data);
-            }
-        }
-
-        found_words
+        recursive_unscramble(next_node, new_building, new_letters, matches);
     }
 }

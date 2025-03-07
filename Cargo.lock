@@ -3,14 +3,5 @@
 version = 4
 
 [[package]]
-name = "radix-tree"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "742010e7132d1a480149cff942ddb6c339e6ae01ffeffb1a63f6bff2fa76c23a"
-
-[[package]]
 name = "word-unscrambler"
 version = "0.1.0"
-dependencies = [
- "radix-tree",
-]
