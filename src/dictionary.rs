@@ -17,7 +17,10 @@ pub fn load_dictionary(trie: &mut Trie, path: &Path) -> Result<(), Error> {
         let words = line.split_whitespace();
 
         for word in words {
-            trie.insert(word.to_lowercase());
+            match trie.insert(word.to_lowercase()) {
+                Ok(_) => {}
+                Err(error) => panic!("{}", error),
+            }
         }
     }
 

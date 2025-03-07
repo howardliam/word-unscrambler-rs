@@ -1,4 +1,22 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TreeInsertError;
+
+impl fmt::Display for TreeInsertError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "failed to insert into trie")
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TreeRetrievalError;
+
+impl fmt::Display for TreeRetrievalError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "failed to retrieve from trie")
+    }
+}
 
 pub struct TrieNode {
     pub is_word: bool,
@@ -6,6 +24,7 @@ pub struct TrieNode {
 }
 
 impl TrieNode {
+    /// Creates a new [`TrieNode`].
     pub fn new() -> Self {
         Self {
             is_word: false,
@@ -19,13 +38,18 @@ pub struct Trie {
 }
 
 impl Trie {
+    /// Creates a new [`Trie`].
     pub fn new() -> Self {
         Self {
             root: Box::new(TrieNode::new()),
         }
     }
 
-    pub fn insert(&mut self, word: String) {
+    /// Inserts the given word into the trie.
+    ///
+    /// # Panics
+    /// Panics if a child is failed to be acquired, this should never happen.
+    pub fn insert(&mut self, word: String) -> Result<(), TreeInsertError> {
         let mut current = &mut self.root;
 
         for ch in word.chars() {
@@ -34,25 +58,50 @@ impl Trie {
             }
             current = match current.children.get_mut(&ch) {
                 Some(node) => node,
-                None => panic!("Failed to get child"),
+                None => return Err(TreeInsertError),
             }
         }
 
         current.is_word = true;
+
+        Ok(())
     }
 
-    pub fn search(&self, word: String) -> bool {
+    /// Searches the trie to see if the given word exists.
+    #[allow(dead_code)]
+    pub fn search(&self, word: String) -> Result<bool, TreeRetrievalError> {
         let mut current = &self.root;
         for ch in word.chars() {
             if !current.children.contains_key(&ch) {
-                return false;
+                return Ok(false);
             }
             current = match current.children.get(&ch) {
                 Some(node) => node,
-                None => panic!("Failed to get child"),
+                None => return Err(TreeRetrievalError),
             }
         }
 
-        current.is_word
+        Ok(current.is_word)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_insert() {
+        let mut trie = Trie::new();
+        let result = trie.insert("foobar".to_owned());
+
+        assert_eq!(result, Ok(()));
+    }
+
+    #[test]
+    fn test_search() {
+        let trie = Trie::new();
+        let result = trie.search("foobar".to_owned());
+
+        assert_eq!(result, Ok(false));
     }
 }

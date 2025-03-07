@@ -1,5 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 
+const MAX_WIDTH: usize = 80;
+
 fn sort_words_by_length(words: &HashSet<String>) -> BTreeMap<usize, BTreeSet<String>> {
     let mut sorted = BTreeMap::new();
 
@@ -15,6 +17,8 @@ fn sort_words_by_length(words: &HashSet<String>) -> BTreeMap<usize, BTreeSet<Str
 }
 
 pub fn print_words(words: &HashSet<String>) {
+    println!();
+
     let sorted_words = sort_words_by_length(&words);
 
     let keys = sorted_words.keys();
@@ -24,8 +28,16 @@ pub fn print_words(words: &HashSet<String>) {
             None => continue,
         };
 
+        let width = MAX_WIDTH / key;
+        let mut count = 0;
+
         for word in words {
+            if count > width {
+                println!();
+                count = 0;
+            }
             print!("{} ", word);
+            count += 1;
         }
         print!("\n\n");
     }
