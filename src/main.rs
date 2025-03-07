@@ -22,7 +22,7 @@ fn main() {
 
     loop {
         let input = rl.readline(
-            "Type some scrambled text ('?' for a wildcard, max 2) [Ctrl-C, Ctrl-D to exit]: ",
+            "Type some scrambled text ('?' for a wildcard, max 2. 10 max letters) [Ctrl-C, Ctrl-D to exit]: ",
         );
         let line = match input {
             Ok(line) => line,
@@ -41,12 +41,14 @@ fn main() {
             Err(error) => println!("Failed to add history entry: {}", error),
         }
 
-        let words = unscramble(&trie, line);
+        let words = match unscramble(&trie, line) {
+            Ok(words) => words,
+            Err(_) => continue,
+        };
 
-        if words.is_empty() {
-            println!("No results found \n");
-        } else {
-            pretty_printer::print_words(&words);
+        match words.is_empty() {
+            true => println!("No results found \n"),
+            false => pretty_printer::print_words(&words),
         }
     }
 }
