@@ -2,20 +2,20 @@ use std::collections::HashSet;
 
 use crate::trie::{Trie, TrieNode};
 
-pub fn unscramble(trie: &Trie, letters: String) -> Result<HashSet<String>, ()> {
+pub fn unscramble(trie: &Trie, letters: String) -> Option<HashSet<String>> {
     let mut matches = HashSet::new();
 
     let letters = letters.trim();
 
     if letters.len() > 10 {
         println!("10 max letters exceeded");
-        return Err(());
+        return None;
     }
 
     let wildcard_count = letters.chars().filter(|&ch| ch == '?').count();
     if wildcard_count > 2 {
         println!("2 max wildcards exceeded");
-        return Err(());
+        return None;
     }
 
     let current_node = &trie.root;
@@ -26,7 +26,7 @@ pub fn unscramble(trie: &Trie, letters: String) -> Result<HashSet<String>, ()> {
         &mut matches,
     );
 
-    Ok(matches)
+    Some(matches)
 }
 
 fn recursive_unscramble(

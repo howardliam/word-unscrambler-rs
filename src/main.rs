@@ -42,8 +42,8 @@ fn main() {
         }
 
         let words = match unscramble(&trie, line) {
-            Ok(words) => words,
-            Err(_) => continue,
+            Some(words) => words,
+            None => continue,
         };
 
         match words.is_empty() {
