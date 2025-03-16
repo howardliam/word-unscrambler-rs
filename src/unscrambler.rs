@@ -6,6 +6,7 @@ use std::{
 };
 
 use crate::{
+    dictionary::Dictionary,
     settings,
     trie::{Trie, TrieNode},
 };
@@ -23,34 +24,12 @@ impl Unscrambler {
         }
     }
 
-    pub fn load_dictionary(&mut self, path: &Path) -> Result<(), std::io::Error> {
-        let file = match File::open(path) {
-            Ok(file) => file,
-            Err(error) => return Err(error),
-        };
-        let reader = BufReader::new(file);
-        let mut lines = reader.lines();
+    pub fn get_trie(&self) -> &Trie {
+        return &self.trie;
+    }
 
-        let mut unique_letters = BTreeSet::new();
-
-        while let Some(Ok(line)) = lines.next() {
-            let words = line.split_whitespace();
-
-            for word in words {
-                for ch in word.chars() {
-                    unique_letters.insert(ch);
-                }
-
-                match self.trie.insert(word.to_lowercase()) {
-                    Ok(_) => {}
-                    Err(error) => panic!("{}", error),
-                }
-            }
-        }
-
-        self.alphabet = unique_letters.iter().map(|&ch| ch).collect();
-
-        Ok(())
+    pub fn get_trie_mut(&mut self) -> &mut Trie {
+        return &mut self.trie;
     }
 
     pub fn unscramble(&self, letters: String) -> Option<HashSet<String>> {
@@ -116,5 +95,37 @@ impl Unscrambler {
 
             self.recursive_unscramble(next_node, new_building, new_letters, matches);
         }
+    }
+}
+
+impl Dictionary for Unscrambler {
+    fn load_dictionary(&mut self, path: &Path) -> Result<(), std::io::Error> {
+        let file = match File::open(path) {
+            Ok(file) => file,
+            Err(error) => return Err(error),
+        };
+        let reader = BufReader::new(file);
+        let mut lines = reader.lines();
+
+        let mut unique_letters = BTreeSet::new();
+
+        while let Some(Ok(line)) = lines.next() {
+            let words = line.split_whitespace();
+
+            for word in words {
+                for ch in word.chars() {
+                    unique_letters.insert(ch);
+                }
+
+                match self.trie.insert(word.to_lowercase()) {
+                    Ok(_) => {}
+                    Err(error) => panic!("{}", error),
+                }
+            }
+        }
+
+        self.alphabet = unique_letters.iter().map(|&ch| ch).collect();
+
+        Ok(())
     }
 }

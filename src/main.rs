@@ -1,7 +1,9 @@
+use dictionary::Dictionary;
 use rustyline::{error::ReadlineError, DefaultEditor};
 use std::path::Path;
 use unscrambler::Unscrambler;
 
+mod dictionary;
 mod pretty_printer;
 mod settings;
 mod trie;
